@@ -1,6 +1,6 @@
 #include <doctest/doctest.h>
-#include <greeter/greeter.h>
-#include <greeter/version.h>
+#include <keyvau/greeter.h>
+#include <keyvau/version.h>
 
 #include <string>
 
