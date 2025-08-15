@@ -1,7 +1,7 @@
 DOXYFILE = 'Doxyfile'
 
 LINKS_NAVBAR1 = [
-    (None, 'pages', [(None, 'about')]),
+    (None, 'pages', [(None, 'about'), (None, 'key_value_store')]),
     (None, 'namespaces', []),
 ]
 

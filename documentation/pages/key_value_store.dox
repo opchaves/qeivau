@@ -1,0 +1,48 @@
+/** @page key_value_store KeyValueStore
+  @section key_value_store_overview Overview
+  The `KeyValueStore` class provides a simple in-memory key-value store for string keys and values. It supports basic operations such as setting, retrieving, removing, checking, and listing keys.
+
+  @section key_value_store_api API Reference
+  - `void set(const std::string& key, const std::string& value)`
+    - Sets the value for a key. Updates if the key exists.
+  - `std::optional<std::string> get(const std::string& key) const`
+    - Gets the value for a key. Returns `std::nullopt` if not found.
+  - `bool remove(const std::string& key)`
+    - Removes a key. Returns true if removed, false if not found.
+  - `bool has(const std::string& key) const`
+    - Checks if a key exists.
+  - `std::vector<std::string> keys() const`
+    - Lists all keys.
+
+  @section key_value_store_example Example Usage
+  @code{.cpp}
+  #include <keyvau/key_value_store.h>
+  #include <iostream>
+  using namespace keyvau;
+  int main() {
+    KeyValueStore store;
+    store.set("foo", "bar");
+    if (auto value = store.get("foo")) {
+      std::cout << "Value: " << *value << std::endl;
+    }
+    store.remove("foo");
+    std::cout << "Has foo? " << store.has("foo") << std::endl;
+    store.set("a", "1");
+    store.set("b", "2");
+    for (const auto& key : store.keys()) {
+      std::cout << "Key: " << key << std::endl;
+    }
+    return 0;
+  }
+  @endcode
+
+  @section key_value_store_cli CLI
+  A command-line interface is available with commands:
+  - set <key> <value>
+  - get <key>
+  - remove <key>
+  - has <key>
+  - keys
+  - help
+  - exit
+*/
