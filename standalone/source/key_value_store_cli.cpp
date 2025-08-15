@@ -1,66 +1,96 @@
-#include "keyvau/key_value_store.h"
+#include <keyvau/key_value_store.h>
+
+#include <cxxopts.hpp>
 #include <iostream>
+#include <sstream>
 #include <string>
 
 using namespace keyvau;
 
 void print_help() {
-    std::cout << "Commands:\n"
-              << "  set <key> <value>\n"
-              << "  get <key>\n"
-              << "  remove <key>\n"
-              << "  has <key>\n"
-              << "  keys\n"
-              << "  help\n"
-              << "  exit\n";
+  std::cout << "Commands:\n"
+            << "  set <key> <value>\n"
+            << "  get <key>\n"
+            << "  remove <key>\n"
+            << "  has <key>\n"
+            << "  keys\n"
+            << "  help\n"
+            << "  exit\n";
 }
 
-int main() {
-    KeyValueStore store;
-    std::string line;
+auto main(int argc, char** argv) -> int {
+  cxxopts::Options options(*argv, "A simple key-value store CLI");
+
+  options.add_options()("h,help", "Show help");
+
+  auto result = options.parse(argc, argv);
+
+  if (result.count("help")) {
+    std::cout << options.help() << std::endl;
     print_help();
-    while (true) {
-        std::cout << "> ";
-        if (!std::getline(std::cin, line)) break;
-        if (line.empty()) continue;
-        std::istringstream iss(line);
-        std::string cmd, key, value;
-        iss >> cmd;
-        if (cmd == "set") {
-            iss >> key >> value;
-            store.set(key, value);
-            std::cout << "OK\n";
-        } else if (cmd == "get") {
-            iss >> key;
-            auto result = store.get(key);
-            if (result) {
-                std::cout << *result << "\n";
-            } else {
-                std::cout << "(not found)\n";
-            }
-        } else if (cmd == "remove") {
-            iss >> key;
-            if (store.remove(key)) {
-                std::cout << "Removed\n";
-            } else {
-                std::cout << "(not found)\n";
-            }
-        } else if (cmd == "has") {
-            iss >> key;
-            std::cout << (store.has(key) ? "true" : "false") << "\n";
-        } else if (cmd == "keys") {
-            auto keys = store.keys();
-            for (const auto& k : keys) {
-                std::cout << k << " ";
-            }
-            std::cout << "\n";
-        } else if (cmd == "help") {
-            print_help();
-        } else if (cmd == "exit") {
-            break;
-        } else {
-            std::cout << "Unknown command. Type 'help'.\n";
-        }
-    }
     return 0;
+  }
+
+  KeyValueStore store;
+  print_help();
+  std::string line;
+  while (true) {
+    std::cout << "> ";
+    if (!std::getline(std::cin, line)) break;
+    if (line.empty()) continue;
+    std::istringstream iss(line);
+    std::string cmd, key, value;
+    iss >> cmd;
+    if (cmd == "exit") break;
+    if (cmd == "set") {
+      iss >> key >> value;
+      if (key.empty() || value.empty()) {
+        std::cerr << "set requires <key> and <value>" << std::endl;
+        continue;
+      }
+      store.set(key, value);
+      std::cout << "OK" << std::endl;
+    } else if (cmd == "get") {
+      iss >> key;
+      if (key.empty()) {
+        std::cerr << "get requires <key>" << std::endl;
+        continue;
+      }
+      auto result = store.get(key);
+      if (result) {
+        std::cout << *result << std::endl;
+      } else {
+        std::cout << "(not found)" << std::endl;
+      }
+    } else if (cmd == "remove") {
+      iss >> key;
+      if (key.empty()) {
+        std::cerr << "remove requires <key>" << std::endl;
+        continue;
+      }
+      if (store.remove(key)) {
+        std::cout << "Removed" << std::endl;
+      } else {
+        std::cout << "(not found)" << std::endl;
+      }
+    } else if (cmd == "has") {
+      iss >> key;
+      if (key.empty()) {
+        std::cerr << "has requires <key>" << std::endl;
+        continue;
+      }
+      std::cout << (store.has(key) ? "true" : "false") << std::endl;
+    } else if (cmd == "keys") {
+      auto keys = store.keys();
+      for (const auto& k : keys) {
+        std::cout << k << " ";
+      }
+      std::cout << std::endl;
+    } else if (cmd == "help") {
+      print_help();
+    } else {
+      std::cout << "Unknown command. Type 'help'." << std::endl;
+    }
+  }
+  return 0;
 }
