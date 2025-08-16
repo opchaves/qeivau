@@ -1,11 +1,11 @@
-#include <keyvau/key_value_store.h>
+#include "qeivau/qeivau.h"
 
 #include <cxxopts.hpp>
 #include <iostream>
 #include <sstream>
 #include <string>
 
-using namespace keyvau;
+using namespace qeivau;
 
 void print_help() {
   std::cout << "Commands:\n"
@@ -31,7 +31,7 @@ auto main(int argc, char** argv) -> int {
     return 0;
   }
 
-  KeyValueStore store;
+  QeiVau store;
   print_help();
   std::string line;
   while (true) {

@@ -1,33 +1,33 @@
 #include <doctest/doctest.h>
-#include <keyvau/key_value_store.h>
+#include <qeivau/qeivau.h>
 #include <string>
 
-using namespace keyvau;
+using namespace qeivau;
 
-TEST_CASE("KeyValueStore set and get") {
-    KeyValueStore store;
+TEST_CASE("QeiVau set and get") {
+    QeiVau store;
     store.set("foo", "bar");
     CHECK(store.get("foo").value() == "bar");
     CHECK(!store.get("baz"));
 }
 
-TEST_CASE("KeyValueStore remove") {
-    KeyValueStore store;
+TEST_CASE("QeiVau remove") {
+    QeiVau store;
     store.set("a", "1");
     CHECK(store.remove("a"));
     CHECK(!store.has("a"));
     CHECK(!store.remove("a"));
 }
 
-TEST_CASE("KeyValueStore has") {
-    KeyValueStore store;
+TEST_CASE("QeiVau has") {
+    QeiVau store;
     store.set("x", "y");
     CHECK(store.has("x"));
     CHECK(!store.has("z"));
 }
 
-TEST_CASE("KeyValueStore keys") {
-    KeyValueStore store;
+TEST_CASE("QeiVau keys") {
+    QeiVau store;
     store.set("one", "1");
     store.set("two", "2");
     auto keys = store.keys();

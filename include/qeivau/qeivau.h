@@ -4,9 +4,9 @@
 #include <unordered_map>
 #include <vector>
 
-namespace keyvau {
+namespace qeivau {
 
-  class KeyValueStore {
+  class QeiVau {
   public:
     // Set a value for a key
     void set(const std::string& key, const std::string& value);
@@ -27,4 +27,4 @@ namespace keyvau {
     std::unordered_map<std::string, std::string> store_;
   };
 
-}  // namespace keyvau
+}  // namespace qeivau

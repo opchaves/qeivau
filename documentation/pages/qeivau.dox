@@ -1,0 +1,38 @@
+
+/** \page QeiVau QeiVau Class
+
+\section description Description
+The `qeivau::QeiVau` class provides a simple key-value store with string keys and values. It supports setting, retrieving, removing, and listing keys, as well as checking for key existence.
+
+\section synopsis Synopsis
+\code{.cpp}
+qeivau::QeiVau store;
+store.set("key", "value");
+auto val = store.get("key");
+bool exists = store.has("key");
+bool removed = store.remove("key");
+auto all_keys = store.keys();
+\endcode
+
+\section methods Methods
+\subsection set set
+void set(const std::string& key, const std::string& value);
+	- Sets the value for the given key.
+
+\subsection get get
+std::optional<std::string> get(const std::string& key) const;
+	- Retrieves the value for the given key. Returns std::nullopt if the key does not exist.
+
+\subsection remove remove
+bool remove(const std::string& key);
+	- Removes the key from the store. Returns true if the key was removed, false if not found.
+
+\subsection has has
+bool has(const std::string& key) const;
+	- Checks if the key exists in the store.
+
+\subsection keys keys
+std::vector<std::string> keys() const;
+	- Returns a vector containing all keys in the store.
+
+*/
