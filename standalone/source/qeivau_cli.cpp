@@ -1,9 +1,9 @@
-#include "qeivau/qeivau.h"
-
 #include <cxxopts.hpp>
 #include <iostream>
 #include <sstream>
 #include <string>
+
+#include "qeivau/qeivau.h"
 
 using namespace qeivau;
 
