@@ -43,7 +43,8 @@ auto main(int argc, char** argv) -> int {
     iss >> cmd;
     if (cmd == "exit") break;
     if (cmd == "set") {
-      iss >> key >> value;
+      iss >> key;
+      std::getline(iss, value);
       if (key.empty() || value.empty()) {
         std::cerr << "set requires <key> and <value>" << std::endl;
         continue;
