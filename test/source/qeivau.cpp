@@ -1,5 +1,5 @@
 #include <doctest/doctest.h>
-#include <qeivau/qeivau.h>
+#include "qeivau/qeivau.h"
 
 #include <string>
 
