@@ -8,7 +8,9 @@ using namespace qeivau;
 TEST_CASE("QeiVau set and get") {
   QeiVau store;
   store.set("foo", "bar");
+  store.set("name", "paulo chaves");
   CHECK(store.get("foo").value() == "bar");
+  CHECK(store.get("name").value() == "paulo chaves");
   CHECK(!store.get("baz"));
 }
 
