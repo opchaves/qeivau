@@ -14,6 +14,8 @@ void print_help() {
             << "  remove <key>\n"
             << "  has <key>\n"
             << "  keys\n"
+            << "  save <filename>\n"
+            << "  load <filename>\n"
             << "  help\n"
             << "  exit\n";
 }
@@ -49,7 +51,9 @@ auto main(int argc, char** argv) -> int {
         std::cerr << "set requires <key> and <value>" << std::endl;
         continue;
       }
-      store.set(key, value);
+      auto trimmed_value = value;
+      trimmed_value.erase(0, trimmed_value.find_first_not_of(" \t\n\r"));
+      store.set(key, trimmed_value);
       std::cout << "OK" << std::endl;
     } else if (cmd == "get") {
       iss >> key;
@@ -87,6 +91,24 @@ auto main(int argc, char** argv) -> int {
         std::cout << k << " ";
       }
       std::cout << std::endl;
+    } else if (cmd == "save") {
+      std::string filename;
+      iss >> filename;
+      if (filename.empty()) {
+        std::cerr << "save requires <filename>" << std::endl;
+        continue;
+      }
+      store.persist(filename);
+      std::cout << "Saved to " << filename << std::endl;
+    } else if (cmd == "load") {
+      std::string filename;
+      iss >> filename;
+      if (filename.empty()) {
+        std::cerr << "load requires <filename>" << std::endl;
+        continue;
+      }
+      store.load(filename);
+      std::cout << "Loaded from " << filename << std::endl;
     } else if (cmd == "help") {
       print_help();
     } else {

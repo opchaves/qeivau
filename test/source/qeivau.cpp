@@ -1,7 +1,6 @@
-#include <doctest/doctest.h>
 #include "qeivau/qeivau.h"
 
-#include <string>
+#include <doctest/doctest.h>
 
 using namespace qeivau;
 

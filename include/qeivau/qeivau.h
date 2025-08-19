@@ -23,6 +23,10 @@ namespace qeivau {
     // List all keys
     std::vector<std::string> keys() const;
 
+    void persist(const std::string& filename) const;
+
+    void load(const std::string& filename);
+
   private:
     std::unordered_map<std::string, std::string> store_;
   };

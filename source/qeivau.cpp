@@ -1,5 +1,6 @@
 #include "qeivau/qeivau.h"
 
+#include <fstream>
 #include <optional>
 
 namespace qeivau {
@@ -25,6 +26,30 @@ namespace qeivau {
       result.push_back(pair.first);
     }
     return result;
+  }
+
+  void QeiVau::persist(const std::string& filename) const {
+    std::ofstream out(filename);
+    if (!out) {
+      throw std::runtime_error("Error opening file for writing: " + filename);
+    }
+
+    for (const auto& pair : store_) {
+      out << pair.first << "=" << pair.second << "\n";
+    }
+  }
+
+  void QeiVau::load(const std::string& filename) {
+    std::ifstream in(filename);
+    std::string line;
+    while (std::getline(in, line)) {
+      auto pos = line.find('=');
+      if (pos != std::string::npos) {
+        std::string key = line.substr(0, pos);
+        std::string value = line.substr(pos + 1);
+        store_[key] = value;
+      }
+    }
   }
 
 }  // namespace qeivau
