@@ -56,7 +56,6 @@ The CLI provides an interactive shell for managing the key-value store.
 - `has <key>`: Check if a key exists.
 - `keys`: List all keys.
 - `save <filename>`: Save the store to a file.
-- `load <filename>`: Load the store from a file.
 - `help`: Show available commands.
 - `exit`: Exit the CLI.
 
@@ -75,8 +74,6 @@ name
 Saved to store.env
 > remove name
 Removed
-> load store.env
-Loaded from store.env
 > keys
 name
 > exit
@@ -184,7 +181,7 @@ open build/doc/doxygen/html/index.html
 
 To build the documentation locally, you will need Doxygen, jinja2 and Pygments installed on your system.
 
------
+---
 
 ## 10. Build everything at once
 
