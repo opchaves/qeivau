@@ -24,6 +24,7 @@ auto main(int argc, char** argv) -> int {
   cxxopts::Options options(*argv, "A simple key-value store CLI");
 
   options.add_options()("h,help", "Show help");
+  options.add_options()("f,filename", "Specify the filename", cxxopts::value<std::string>());
 
   auto result = options.parse(argc, argv);
 
@@ -34,6 +35,11 @@ auto main(int argc, char** argv) -> int {
   }
 
   QeiVau store;
+
+  if (result.count("filename")) {
+    store.load(result["filename"].as<std::string>());
+  }
+
   print_help();
   std::string line;
   while (true) {
