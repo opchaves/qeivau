@@ -15,7 +15,6 @@ void print_help() {
             << "  has <key>\n"
             << "  keys\n"
             << "  save <filename>\n"
-            << "  load <filename>\n"
             << "  help\n"
             << "  exit\n";
 }
@@ -106,15 +105,6 @@ auto main(int argc, char** argv) -> int {
       }
       store.persist(filename);
       std::cout << "Saved to " << filename << std::endl;
-    } else if (cmd == "load") {
-      std::string filename;
-      iss >> filename;
-      if (filename.empty()) {
-        std::cerr << "load requires <filename>" << std::endl;
-        continue;
-      }
-      store.load(filename);
-      std::cout << "Loaded from " << filename << std::endl;
     } else if (cmd == "help") {
       print_help();
     } else {
