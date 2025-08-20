@@ -37,3 +37,20 @@ TEST_CASE("QeiVau keys") {
   CHECK((keys[0] == "one" || keys[0] == "two"));
   CHECK((keys[1] == "one" || keys[1] == "two"));
 }
+
+TEST_CASE("QeiVau persist and load") {
+  QeiVau store;
+  store.set("alpha", "1");
+  store.set("beta", "2");
+  store.set("gamma", "3");
+  std::string filename = "test_store.txt";
+  store.persist(filename);
+
+  QeiVau loaded;
+  loaded.load(filename);
+  CHECK(loaded.get("alpha").value() == "1");
+  CHECK(loaded.get("beta").value() == "2");
+  CHECK(loaded.get("gamma").value() == "3");
+
+  std::remove(filename.c_str());
+}
