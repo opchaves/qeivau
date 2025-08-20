@@ -6,3 +6,12 @@ build-exe:
 
 run-exe: build-exe
 	@./build/standalone/QeiVau
+
+config-test:
+	@cmake -S test -B build/test
+
+build-test:
+	@cmake --build build/test
+
+run-test: build-test
+	@./build/test/QeiVauTests
