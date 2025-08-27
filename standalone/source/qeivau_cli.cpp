@@ -66,7 +66,7 @@ auto main(int argc, char** argv) -> int {
         std::cerr << "get requires <key>" << std::endl;
         continue;
       }
-      auto result = store.get(key);
+      auto result = store.getString(key);
       if (result) {
         std::cout << *result << std::endl;
       } else {

@@ -5,7 +5,7 @@ build-exe:
 	@cmake --build build/standalone
 
 run-exe: build-exe
-	@./build/standalone/QeiVau
+	@./build/standalone/QeiVau --filename=${DB}
 
 config-test:
 	@cmake -S test -B build/test

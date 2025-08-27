@@ -8,9 +8,9 @@ TEST_CASE("QeiVau set and get") {
   QeiVau store;
   store.set("foo", "bar");
   store.set("name", "paulo chaves");
-  CHECK(store.get("foo").value() == "bar");
-  CHECK(store.get("name").value() == "paulo chaves");
-  CHECK(!store.get("baz"));
+  CHECK(store.getString("foo").value() == "bar");
+  CHECK(store.getString("name").value() == "paulo chaves");
+  CHECK(!store.getString("baz"));
 }
 
 TEST_CASE("QeiVau remove") {
@@ -42,15 +42,18 @@ TEST_CASE("QeiVau persist and load") {
   QeiVau store;
   store.set("alpha", "1");
   store.set("beta", "2");
-  store.set("gamma", "3");
+  store.set("gamma", 3);
+  store.set("delta", 4.5f);
   std::string filename = "test_store.txt";
   store.persist(filename);
 
   QeiVau loaded;
   loaded.load(filename);
-  CHECK(loaded.get("alpha").value() == "1");
-  CHECK(loaded.get("beta").value() == "2");
-  CHECK(loaded.get("gamma").value() == "3");
+  CHECK(loaded.getString("alpha").value() == "1");
+  CHECK(loaded.getString("beta").value() == "2");
+  CHECK(loaded.getInt("gamma").value() == 3);
+  CHECK(loaded.getFloat("delta").value() == 4.5f);
+  CHECK(!loaded.getString("nonexistent"));
 
   std::remove(filename.c_str());
 }
