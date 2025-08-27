@@ -5,7 +5,7 @@
 
 #include "qeivau/qeivau.h"
 
-using namespace qeivau;
+using Store = qeivau::QeiVau<std::string, std::string>;
 
 void print_help() {
   std::cout << "Commands:\n"
@@ -19,12 +19,10 @@ void print_help() {
             << "  exit\n";
 }
 
-auto main(int argc, char** argv) -> int {
+int main(int argc, char** argv) {
   cxxopts::Options options(*argv, "A simple key-value store CLI");
-
   options.add_options()("h,help", "Show help");
   options.add_options()("f,filename", "Specify the filename", cxxopts::value<std::string>());
-
   auto result = options.parse(argc, argv);
 
   if (result.count("help")) {
@@ -33,10 +31,11 @@ auto main(int argc, char** argv) -> int {
     return 0;
   }
 
-  QeiVau store;
+  Store store;
 
   if (result.count("filename")) {
     try {
+      // store.load(result["filename"].as<std::string>());
       store.load(result["filename"].as<std::string>());
     } catch (const std::exception& e) {
       std::cerr << "Error loading file: " << e.what() << std::endl;
@@ -71,7 +70,7 @@ auto main(int argc, char** argv) -> int {
         std::cerr << "get requires <key>" << std::endl;
         continue;
       }
-      auto result = store.getString(key);
+      auto result = store.get(key);
       if (result) {
         std::cout << *result << std::endl;
       } else {
