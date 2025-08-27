@@ -1,6 +1,8 @@
 #pragma once
+#include <array>
 #include <fstream>
 #include <optional>
+#include <sstream>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -32,6 +34,42 @@ namespace qeivau {
       } else {
         static_assert(sizeof(T) == 0, "No default serializer for this type.");
       }
+    }
+  };
+
+  // List serializer for std::vector<T>
+  template <typename T> struct ListSerializer {
+    static std::string serialize(const std::vector<T>& vec) {
+      std::ostringstream oss;
+      oss << "[";
+      for (std::size_t i = 0; i < vec.size(); ++i) {
+        if (i > 0) oss << ",";
+        oss << DefaultSerializer<T>::serialize(vec[i]);
+      }
+      oss << "]";
+      return oss.str();
+    }
+    static std::vector<T> deserialize(const std::string& str) {
+      std::vector<T> vec;
+      std::string s = str;
+      // Remove brackets if present
+      if (!s.empty() && s.front() == '[' && s.back() == ']') {
+        s = s.substr(1, s.size() - 2);
+      }
+      std::size_t start = 0, end = 0;
+      while ((end = s.find(',', start)) != std::string::npos) {
+        std::string item = s.substr(start, end - start);
+        // Trim spaces after comma
+        item.erase(0, item.find_first_not_of(" \t\n\r"));
+        item.erase(item.find_last_not_of(" \t\n\r") + 1);
+        vec.push_back(DefaultSerializer<T>::deserialize(item));
+        start = end + 1;
+      }
+      std::string last = s.substr(start);
+      last.erase(0, last.find_first_not_of(" \t\n\r"));
+      last.erase(last.find_last_not_of(" \t\n\r") + 1);
+      if (!last.empty()) vec.push_back(DefaultSerializer<T>::deserialize(last));
+      return vec;
     }
   };
 
@@ -103,7 +141,7 @@ namespace qeivau {
       return "unknown";
   }
 
-  // Persist to file in key:type=value format
+  // Persist to file in key:type=value format, with array support
   template <typename Key, typename Value, typename Serializer>
   void QeiVau<Key, Value, Serializer>::persist(const std::string& filename) const {
     std::ofstream out(filename);
@@ -116,7 +154,7 @@ namespace qeivau {
     }
   }
 
-  // Load from file expecting key:type=value format
+  // Load from file expecting key:type=value format, with array support
   template <typename Key, typename Value, typename Serializer>
   void QeiVau<Key, Value, Serializer>::load(const std::string& filename) {
     std::ifstream in(filename);
