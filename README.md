@@ -6,56 +6,48 @@ QeiVau is a simple, in-memory key-value store library and CLI tool implemented i
 
 ## Features
 
-### 1. Key-Value Store Class (`qeivau::QeiVau`)
+### 1. Generic Key-Value Store Class (`qeivau::QeiVau`)
 
+- **Template-based:** Supports any serializable type (e.g., `std::string`, `int`, `float`, `std::vector<std::string>`).
+- **Custom serializers:** Built-in support for scalars and lists (`std::vector<string>`), easily extensible for other types.
 - **Set a value**
-
-  - `void set(const std::string& key, const std::string& value);`
-  - Stores or updates the value for a given key.
-
+  - `void set(const Key& key, const Value& value);`
 - **Get a value**
-
-  - `std::optional<std::string> get(const std::string& key) const;`
-  - Retrieves the value for a key. Returns `std::nullopt` if the key does not exist.
-
+  - `std::optional<Value> get(const Key& key) const;`
 - **Remove a key**
-
-  - `bool remove(const std::string& key);`
-  - Removes the key from the store. Returns `true` if the key was removed, `false` if not found.
-
+  - `bool remove(const Key& key);`
 - **Check key existence**
-
-  - `bool has(const std::string& key) const;`
-  - Returns `true` if the key exists, `false` otherwise.
-
+  - `bool has(const Key& key) const;`
 - **List all keys**
-
-  - `std::vector<std::string> keys() const;`
-  - Returns a vector containing all keys in the store.
-
+  - `std::vector<Key> keys() const;`
 - **Persist to file**
-
   - `void persist(const std::string& filename) const;`
-  - Saves all key-value pairs to a file, one per line in `key=value` format.
-
 - **Load from file**
   - `void load(const std::string& filename);`
-  - Loads key-value pairs from a file in `key=value` format.
+
+#### Example types:
+
+```cpp
+using StringStore = qeivau::QeiVau<std::string, std::string>;
+using ListStore = qeivau::QeiVau<std::string, std::vector<std::string>, qeivau::ListSerializer<std::string>>;
+```
 
 ---
 
 ## 2. Command-Line Interface (CLI)
 
-The CLI provides an interactive shell for managing the key-value store.
+The CLI provides an interactive shell for managing both string and list-of-string values.
 
 ### Supported Commands
 
-- `set <key> <value>`: Set a value for a key.
-- `get <key>`: Retrieve the value for a key.
+- `set <key> <value>`: Set a string value for a key.
+- `set <key> [a,b,c]`: Set a list of strings for a key (use brackets and comma-separated values).
+- `get <key>`: Retrieve the value for a key (prints string or list).
 - `remove <key>`: Remove a key.
 - `has <key>`: Check if a key exists.
 - `keys`: List all keys.
-- `save <filename>`: Save the store to a file.
+- `save <filename>`: Save all data (string and list values) to a file.
+- `load <filename>`: Load all data from a file.
 - `help`: Show available commands.
 - `exit`: Exit the CLI.
 
@@ -64,18 +56,25 @@ The CLI provides an interactive shell for managing the key-value store.
 ```sh
 > set name Alice
 OK
+> set fruits [apple,banana,cherry]
+OK
 > get name
 Alice
+> get fruits
+[apple,banana,cherry]
 > has name
+true
+> has fruits
 true
 > keys
 name
+fruits
 > save store.env
 Saved to store.env
 > remove name
 Removed
-> keys
-name
+> get name
+Key not found
 > exit
 ```
 
@@ -83,8 +82,9 @@ name
 
 ## 3. Error Handling
 
-- File operations (`persist`, `load`) throw exceptions if the file cannot be opened or written.
-- CLI prints error messages for invalid commands or missing arguments.
+- Robust error handling for file operations, type mismatches, and malformed input.
+- Exceptions are thrown for file errors, deserialization errors, and type mismatches.
+- CLI prints error messages for invalid commands, missing arguments, or parsing errors.
 
 ---
 
@@ -92,21 +92,25 @@ name
 
 Unit tests (using [doctest](https://github.com/doctest/doctest)) cover:
 
-- Setting and getting values
+- Setting and getting string and list values
 - Removing keys
 - Checking key existence
 - Listing keys
+- Persistence and loading for both types
+- Error handling for malformed input and type mismatches
 
 ---
 
 ## 5. File Format
 
-Persistence uses a simple `.env`-like format:
+Persistence uses a unified format:
 
 ```
-key1=value1
-key2=value2
+key:type=value
 ```
+
+- For string: `name:string=Alice`
+- For list: `fruits:string=[apple,banana,cherry]`
 
 ---
 
@@ -214,4 +218,4 @@ cmake --build build --target GenerateDocs
 
 ## 12. Extensibility
 
-The code is modular and can be extended with new features, such as value escaping, more complex file formats, or additional
+The code is modular and can be extended with new types, custom serializers, value escaping, more complex file formats, or additional features.
