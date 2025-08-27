@@ -74,6 +74,9 @@ namespace qeivau {
 
   void QeiVau::load(const std::string& filename) {
     std::ifstream in(filename);
+    if (!in) {
+      throw std::runtime_error("Could not open file: " + filename);
+    }
     std::string line;
     while (std::getline(in, line)) {
       auto type_pos = line.find(':');
@@ -85,18 +88,22 @@ namespace qeivau {
         if (type == "int") {
           try {
             store_[key] = std::stoi(value);
-          } catch (...) {
-            // ignore parse error
+          } catch (const std::exception& e) {
+            throw std::runtime_error("Invalid int '" + key + "': " + e.what());
           }
         } else if (type == "float") {
           try {
             store_[key] = std::stof(value);
-          } catch (...) {
-            // ignore parse error
+          } catch (const std::exception& e) {
+            throw std::runtime_error("Invalid float '" + key + "': " + e.what());
           }
         } else if (type == "string") {
           store_[key] = value;
+        } else {
+          throw std::runtime_error("Unknown type '" + type + "' for key '" + key + "'.");
         }
+      } else {
+        throw std::runtime_error("Malformed line: " + line);
       }
     }
   }

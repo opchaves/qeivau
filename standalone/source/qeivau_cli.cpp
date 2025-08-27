@@ -36,7 +36,12 @@ auto main(int argc, char** argv) -> int {
   QeiVau store;
 
   if (result.count("filename")) {
-    store.load(result["filename"].as<std::string>());
+    try {
+      store.load(result["filename"].as<std::string>());
+    } catch (const std::exception& e) {
+      std::cerr << "Error loading file: " << e.what() << std::endl;
+      return 1;
+    }
   }
 
   print_help();
