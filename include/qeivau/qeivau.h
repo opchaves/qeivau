@@ -91,7 +91,19 @@ namespace qeivau {
     return result;
   }
 
-  // Persist to file
+  // Helper to get type name as string
+  template <typename T> std::string get_type_name() {
+    if constexpr (std::is_same_v<T, int>)
+      return "int";
+    else if constexpr (std::is_same_v<T, float>)
+      return "float";
+    else if constexpr (std::is_same_v<T, std::string>)
+      return "string";
+    else
+      return "unknown";
+  }
+
+  // Persist to file in key:type=value format
   template <typename Key, typename Value, typename Serializer>
   void QeiVau<Key, Value, Serializer>::persist(const std::string& filename) const {
     std::ofstream out(filename);
@@ -99,11 +111,12 @@ namespace qeivau {
       throw std::runtime_error("Error opening file for writing: " + filename);
     }
     for (const auto& pair : store_) {
-      out << pair.first << ":" << Serializer::serialize(pair.second) << "\n";
+      out << pair.first << ":" << get_type_name<Value>() << "="
+          << Serializer::serialize(pair.second) << "\n";
     }
   }
 
-  // Load from file
+  // Load from file expecting key:type=value format
   template <typename Key, typename Value, typename Serializer>
   void QeiVau<Key, Value, Serializer>::load(const std::string& filename) {
     std::ifstream in(filename);
@@ -112,15 +125,22 @@ namespace qeivau {
     }
     std::string line;
     while (std::getline(in, line)) {
-      auto delim_pos = line.find(':');
-      if (delim_pos != std::string::npos) {
-        Key key = line.substr(0, delim_pos);
-        std::string value_str = line.substr(delim_pos + 1);
-        try {
-          Value value = Serializer::deserialize(value_str);
-          store_[key] = value;
-        } catch (const std::exception& e) {
-          throw std::runtime_error("Deserialization error for key '" + key + "': " + e.what());
+      auto type_pos = line.find(':');
+      auto eq_pos = line.find('=');
+      if (type_pos != std::string::npos && eq_pos != std::string::npos && type_pos < eq_pos) {
+        Key key = line.substr(0, type_pos);
+        std::string type = line.substr(type_pos + 1, eq_pos - type_pos - 1);
+        std::string value_str = line.substr(eq_pos + 1);
+        if (type == get_type_name<Value>()) {
+          try {
+            Value value = Serializer::deserialize(value_str);
+            store_[key] = value;
+          } catch (const std::exception& e) {
+            throw std::runtime_error("Deserialization error for key '" + key + "': " + e.what());
+          }
+        } else {
+          throw std::runtime_error("Type mismatch for key '" + key + "': expected '"
+                                   + get_type_name<Value>() + "', got '" + type + "'.");
         }
       } else {
         throw std::runtime_error("Malformed line: " + line);

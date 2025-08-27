@@ -73,7 +73,6 @@ TEST_CASE("QeiVau load with invalid key value") {
   std::string filename = "test_invalid_store.txt";
   {
     std::ofstream out(filename);
-    out << "name:out\n";
     out << "invalid=nonsense\n";
   }
 
