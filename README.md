@@ -1,6 +1,7 @@
 # QeiVau Key-Value Store
 
-QeiVau is a simple, in-memory key-value store library and CLI tool implemented in C++. It provides basic operations for managing string keys and values, as well as persistence to and from files.
+QeiVau is a simple, in-memory key-value store library and CLI tool implemented in C++.
+It provides basic operations for managing string keys and values, as well as persistence to and from files.
 
 ---
 
