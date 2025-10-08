@@ -26,7 +26,7 @@ It provides basic operations for managing string keys and values, as well as per
 - **Load from file**
   - `void load(const std::string& filename);`
 
-#### Example types:
+#### Example types
 
 ```cpp
 using StringStore = qeivau::QeiVau<std::string, std::string>;
@@ -220,3 +220,14 @@ cmake --build build --target GenerateDocs
 ## 12. Extensibility
 
 The code is modular and can be extended with new types, custom serializers, value escaping, more complex file formats, or additional features.
+
+---
+
+### TODO
+
+- [ ] Don't list commands when running the CLI
+- [ ] Add a command to allow pushing items to a list.
+  - `ladd <key> <item>`: Add an item to the list stored at `<key>`.
+- [ ] Add a command to allow removing items from a list
+  - `ldel <key>:<index>`: Remove an item from the list stored at `<key>`.
+- [ ] Allow changing an item in a list by index
