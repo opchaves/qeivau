@@ -1,5 +1,4 @@
 #pragma once
-#include <array>
 #include <fstream>
 #include <optional>
 #include <sstream>
@@ -15,6 +14,13 @@ namespace qeivau {
     virtual void deserialize(const std::string&) = 0;
     virtual ~Serializable() = default;
   };
+
+  inline std::string trim_spaces(const std::string& s) {
+    std::size_t start = s.find_first_not_of(" \t\n\r");
+    std::size_t end = s.find_last_not_of(" \t\n\r");
+    if (start == std::string::npos) return "";
+    return s.substr(start, end - start + 1);
+  }
 
   // Helper for types that are trivially serializable (int, float, std::string)
   template <typename T> struct DefaultSerializer {
@@ -58,16 +64,11 @@ namespace qeivau {
       }
       std::size_t start = 0, end = 0;
       while ((end = s.find(',', start)) != std::string::npos) {
-        std::string item = s.substr(start, end - start);
-        // Trim spaces after comma
-        item.erase(0, item.find_first_not_of(" \t\n\r"));
-        item.erase(item.find_last_not_of(" \t\n\r") + 1);
+        std::string item = trim_spaces(s.substr(start, end - start));
         vec.push_back(DefaultSerializer<T>::deserialize(item));
         start = end + 1;
       }
-      std::string last = s.substr(start);
-      last.erase(0, last.find_first_not_of(" \t\n\r"));
-      last.erase(last.find_last_not_of(" \t\n\r") + 1);
+      std::string last = trim_spaces(s.substr(start));
       if (!last.empty()) vec.push_back(DefaultSerializer<T>::deserialize(last));
       return vec;
     }
