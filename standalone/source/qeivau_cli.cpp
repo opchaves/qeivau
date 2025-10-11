@@ -68,7 +68,6 @@ int main(int argc, char** argv) {
     }
   }
 
-  print_help();
   std::string line;
   while (true) {
     std::cout << "> ";
