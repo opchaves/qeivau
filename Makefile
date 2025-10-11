@@ -4,7 +4,7 @@ config-exe:
 build-exe:
 	@cmake --build build/standalone
 
-run-exe: build-exe
+run: build-exe
 	@./build/standalone/QeiVau --filename=${DB}
 
 config-test:
@@ -13,5 +13,5 @@ config-test:
 build-test:
 	@cmake --build build/test
 
-run-test: build-test
+test: build-test
 	@./build/test/QeiVauTests
