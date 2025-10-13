@@ -7,10 +7,10 @@ It provides basic operations for managing string keys and values, as well as per
 
 ## Features
 
-### 1. Generic Key-Value Store Class (`qeivau::QeiVau`)
+### 1. Variant Key-Value Store Class (`qeivau::QeiVau`)
 
-- **Template-based:** Supports any serializable type (e.g., `std::string`, `int`, `float`, `std::vector<std::string>`).
-- **Custom serializers:** Built-in support for scalars and lists (`std::vector<string>`), easily extensible for other types.
+- **Variant-based values:** Supports storing values as a string, a list of strings (`std::vector<std::string>`), or a map of strings (`std::map<std::string, std::string>`), using a variant serializer.
+- **Flexible serialization:** Built-in support for serializing and deserializing all supported types, easily extensible for new types.
 - **Set a value**
   - `void set(const Key& key, const Value& value);`
 - **Get a value**
@@ -21,6 +21,8 @@ It provides basic operations for managing string keys and values, as well as per
   - `bool has(const Key& key) const;`
 - **List all keys**
   - `std::vector<Key> keys() const;`
+- **Clear all keys and values**
+  - `void clear();`
 - **Persist to file**
   - `void persist(const std::string& filename) const;`
 - **Load from file**
@@ -29,40 +31,48 @@ It provides basic operations for managing string keys and values, as well as per
 #### Example types
 
 ```cpp
-using StringStore = qeivau::QeiVau<std::string, std::string>;
-using ListStore = qeivau::QeiVau<std::string, std::vector<std::string>, qeivau::ListSerializer<std::string>>;
+using QeiVauStore = qeivau::QeiVau<std::string, qeivau::Value, qeivau::VariantSerializer<qeivau::Value>>;
 ```
-
----
 
 ## 2. Command-Line Interface (CLI)
 
-The CLI provides an interactive shell for managing both string and list-of-string values.
+The CLI provides an interactive shell for managing key-value pairs, supporting string,
+list (`[item1,item2,...]`), and map (`{key1:value1,key2:value2,...}`) values. Keys are case-insensitive.
 
-### Supported Commands
+### Basic Usage
+
+Start the CLI executable and enter commands interactively. Each command manipulates the in-memory store and provides feedback.
+
+#### Commands
 
 - `set <key> <value>`: Set a string value for a key.
 - `set <key> [a,b,c]`: Set a list of strings for a key (use brackets and comma-separated values).
-- `get <key>`: Retrieve the value for a key (prints string or list).
+- `set <key> {k1:v1,k2:v2}`: Set a map of strings for a key (use braces and comma-separated key:value pairs).
+- `get <key>`: Retrieve the value for a key (prints string, list, or map).
 - `remove <key>`: Remove a key.
 - `has <key>`: Check if a key exists.
 - `keys`: List all keys.
-- `save <filename>`: Save all data (string and list values) to a file.
+- `save <filename>`: Save all data to a file.
 - `load <filename>`: Load all data from a file.
+- `clear`: Remove all data from the store.
 - `help`: Show available commands.
 - `exit`: Exit the CLI.
 
-### Usage Example
+#### Example Session
 
 ```sh
 > set name Alice
 OK
 > set fruits [apple,banana,cherry]
 OK
+> set config {mode:fast,debug:true}
+OK
 > get name
 Alice
 > get fruits
 [apple,banana,cherry]
+> get config
+{mode:fast,debug:true}
 > has name
 true
 > has fruits
@@ -70,6 +80,7 @@ true
 > keys
 name
 fruits
+config
 > save store.env
 Saved to store.env
 > remove name
@@ -79,15 +90,11 @@ Key not found
 > exit
 ```
 
----
-
 ## 3. Error Handling
 
-- Robust error handling for file operations, type mismatches, and malformed input.
-- Exceptions are thrown for file errors, deserialization errors, and type mismatches.
-- CLI prints error messages for invalid commands, missing arguments, or parsing errors.
-
----
+- Comprehensive error handling for file operations, type mismatches, malformed input, and empty or whitespace-only keys.
+- Exceptions are thrown for file open/write errors, deserialization errors, empty keys, and malformed lines.
+- The CLI prints error messages for invalid commands, missing arguments, parsing errors, and runtime exceptions.
 
 ## 4. Unit Tests
 
@@ -104,16 +111,19 @@ Unit tests (using [doctest](https://github.com/doctest/doctest)) cover:
 
 ## 5. File Format
 
-Persistence uses a unified format:
+Persistence now uses a simplified format, omitting the type annotation. All values are stored as strings, lists, or maps, inferred from their syntax:
 
 ```
-key:type=value
+key=value
 ```
 
-- For string: `name:string=Alice`
-- For list: `fruits:string=[apple,banana,cherry]`
+Examples:
 
----
+- String: `name=Alice`
+- List: `fruits=[apple,banana,cherry]`
+- Map: `config={mode:fast,debug:true}`
+
+Lists use square brackets and comma-separated values; maps use curly braces with comma-separated key:value pairs.
 
 ## 6. Build & Run
 
@@ -225,7 +235,6 @@ The code is modular and can be extended with new types, custom serializers, valu
 
 ### TODO
 
-- [ ] Don't list commands when running the CLI
 - [ ] Add a command to allow pushing items to a list.
   - `ladd <key> <item>`: Add an item to the list stored at `<key>`.
 - [ ] Add a command to allow removing items from a list
