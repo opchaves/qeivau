@@ -1,5 +1,6 @@
 #pragma once
 #include <fstream>
+#include <iostream>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -9,7 +10,7 @@
 
 namespace qeivau {
 
-  template <typename Key, typename Value, typename Serializer = DefaultSerializer<Value>>
+  template <typename Key, typename Value, typename Serializer = VariantSerializer<Value>>
   class QeiVau {
   public:
     void set(const Key& key, const Value& value);
@@ -24,11 +25,13 @@ namespace qeivau {
     std::unordered_map<Key, Value> store_;
   };
 
-  // Implementation of QeiVau template
-
-  // Set a value for a key
   template <typename Key, typename Value, typename Serializer>
   void QeiVau<Key, Value, Serializer>::set(const Key& key, const Value& value) {
+    auto trimmed_key = trim_spaces(key);
+    if (trimmed_key.empty()) {
+      throw std::invalid_argument("Key cannot be empty or whitespace");
+    }
+
     store_[key] = value;
   }
 
@@ -88,10 +91,13 @@ namespace qeivau {
     while (std::getline(in, line)) {
       auto eq_pos = line.find('=');
       if (eq_pos != std::string::npos) {
-        Key key = line.substr(0, eq_pos);
+        Key key = trim_spaces(line.substr(0, eq_pos));
+        if (key.empty()) {
+          throw std::runtime_error("Key cannot be empty in line: " + line);
+        }
         std::string value_str = line.substr(eq_pos + 1);
         try {
-          Value value = Serializer::deserialize(value_str);
+          Value value = VariantSerializer<Value>::deserialize(value_str);
           store_[key] = value;
         } catch (const std::exception& e) {
           throw std::runtime_error("Deserialization error for key '" + key + "': " + e.what());
