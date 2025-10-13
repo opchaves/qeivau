@@ -11,7 +11,7 @@ config-test:
 	@cmake -S test -B build/test
 
 build-test:
-	@cmake --build build/test
+	@CTEST_OUTPUT_ON_FAILURE=1 cmake --build build/test
 
 test: build-test
 	@./build/test/QeiVauTests

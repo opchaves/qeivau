@@ -78,9 +78,7 @@ true
 > has fruits
 true
 > keys
-name
-fruits
-config
+name fruits config
 > save store.env
 Saved to store.env
 > remove name
@@ -137,7 +135,7 @@ Or use the provided `Makefile` targets:
 
 - `make config-exe`
 - `make build-exe`
-- `make run-exe`
+- `make run`
 
 ---
 
@@ -146,12 +144,7 @@ Or use the provided `Makefile` targets:
 Use the following commands from the project's root directory to run the test suite.
 
 ```bash
-cmake -S test -B build/test
-cmake --build build/test
-CTEST_OUTPUT_ON_FAILURE=1 cmake --build build/test --target test
-
-# or simply call the executable:
-./build/test/QeiVauTests
+make test
 ```
 
 To collect code coverage information, run CMake with the `-DENABLE_TEST_COVERAGE=1` option.
