@@ -3,191 +3,180 @@
 #include <doctest/doctest.h>
 
 #include <fstream>
-#include <iostream>
+#include <map>
+#include <string>
+#include <variant>
+#include <vector>
 
-using StringStore = qeivau::QeiVau<std::string, std::string>;
-using ListStore
-    = qeivau::QeiVau<std::string, std::vector<std::string>, qeivau::ListSerializer<std::string>>;
+using QeiVauStore
+    = qeivau::QeiVau<std::string, qeivau::Value, qeivau::VariantSerializer<qeivau::Value>>;
 
 TEST_CASE("QeiVau set and get (string)") {
-  StringStore store;
-  store.set("foo", "bar");
-  store.set("name", "paulo chaves");
-  CHECK(store.get("foo").value() == "bar");
-  CHECK(store.get("name").value() == "paulo chaves");
+  QeiVauStore store;
+  store.set("foo", std::string("bar"));
+  store.set("name", std::string("paulo chaves"));
+  auto foo = store.get("foo");
+  REQUIRE(foo);
+  CHECK(std::get<std::string>(*foo) == "bar");
+  auto name = store.get("name");
+  REQUIRE(name);
+  CHECK(std::get<std::string>(*name) == "paulo chaves");
   CHECK(!store.get("baz"));
 }
 
 TEST_CASE("QeiVau set and get (list)") {
-  ListStore store;
-  store.set("fruits", {"apple", "banana", "cherry"});
-  store.set("empty", {});
+  QeiVauStore store;
+  store.set("fruits", std::vector<std::string>{"apple", "banana", "cherry"});
+  store.set("empty", std::vector<std::string>{});
   auto fruits = store.get("fruits");
   REQUIRE(fruits);
-  CHECK(fruits->size() == 3);
-  CHECK((*fruits)[0] == "apple");
-  CHECK((*fruits)[1] == "banana");
-  CHECK((*fruits)[2] == "cherry");
+  CHECK(std::get<std::vector<std::string>>(*fruits).size() == 3);
+  CHECK(std::get<std::vector<std::string>>(*fruits)[0] == "apple");
+  CHECK(std::get<std::vector<std::string>>(*fruits)[1] == "banana");
+  CHECK(std::get<std::vector<std::string>>(*fruits)[2] == "cherry");
   auto empty = store.get("empty");
   REQUIRE(empty);
-  CHECK(empty->empty());
+  CHECK(std::get<std::vector<std::string>>(*empty).empty());
   CHECK(!store.get("missing"));
 }
 
-TEST_CASE("QeiVau remove (string)") {
-  StringStore store;
-  store.set("a", "1");
+TEST_CASE("QeiVau set and get (map)") {
+  QeiVauStore store;
+  store.set("config", std::map<std::string, std::string>{{"host", "localhost"}, {"port", "8080"}});
+  auto config = store.get("config");
+  REQUIRE(config);
+  const auto& m = std::get<std::map<std::string, std::string>>(*config);
+  CHECK(m.size() == 2);
+  CHECK(m.at("host") == "localhost");
+  CHECK(m.at("port") == "8080");
+  CHECK(!store.get("missing"));
+}
+
+TEST_CASE("QeiVau remove") {
+  QeiVauStore store;
+  store.set("a", std::string("1"));
+  store.set("b", std::vector<std::string>{"x"});
+  store.set("c", std::map<std::string, std::string>{{"k", "v"}});
   CHECK(store.remove("a"));
+  CHECK(store.remove("b"));
+  CHECK(store.remove("c"));
   CHECK(!store.has("a"));
+  CHECK(!store.has("b"));
+  CHECK(!store.has("c"));
   CHECK(!store.remove("a"));
 }
 
-TEST_CASE("QeiVau remove (list)") {
-  ListStore store;
-  store.set("letters", {"a", "b"});
-  CHECK(store.remove("letters"));
-  CHECK(!store.has("letters"));
-  CHECK(!store.remove("letters"));
-}
-
-TEST_CASE("QeiVau has (string)") {
-  StringStore store;
-  store.set("x", "y");
+TEST_CASE("QeiVau has") {
+  QeiVauStore store;
+  store.set("x", std::string("y"));
+  store.set("nums", std::vector<std::string>{"1", "2"});
+  store.set("env", std::map<std::string, std::string>{{"PATH", "/usr/bin"}});
   CHECK(store.has("x"));
-  CHECK(!store.has("z"));
-}
-
-TEST_CASE("QeiVau has (list)") {
-  ListStore store;
-  store.set("nums", {"1", "2"});
   CHECK(store.has("nums"));
+  CHECK(store.has("env"));
+  CHECK(!store.has("z"));
   CHECK(!store.has("other"));
 }
 
-TEST_CASE("QeiVau keys (string)") {
-  StringStore store;
-  store.set("one", "1");
-  store.set("two", "2");
+TEST_CASE("QeiVau keys") {
+  QeiVauStore store;
+  store.set("one", std::string("1"));
+  store.set("two", std::vector<std::string>{"a", "b"});
+  store.set("three", std::map<std::string, std::string>{{"k", "v"}});
   auto keys = store.keys();
-  CHECK(keys.size() == 2);
-  CHECK((keys[0] == "one" || keys[0] == "two"));
-  CHECK((keys[1] == "one" || keys[1] == "two"));
+  CHECK(keys.size() == 3);
+  CHECK((keys[0] == "one" || keys[0] == "two" || keys[0] == "three"));
+  CHECK((keys[1] == "one" || keys[1] == "two" || keys[1] == "three"));
+  CHECK((keys[2] == "one" || keys[2] == "two" || keys[2] == "three"));
 }
 
-TEST_CASE("QeiVau keys (list)") {
-  ListStore store;
-  store.set("a", {"x"});
-  store.set("b", {"y", "z"});
-  auto keys = store.keys();
-  CHECK(keys.size() == 2);
-  CHECK((keys[0] == "a" || keys[0] == "b"));
-  CHECK((keys[1] == "a" || keys[1] == "b"));
-}
-
-TEST_CASE("QeiVau persist and load (string)") {
-  StringStore store;
-  store.set("alpha", "1");
-  store.set("beta", "2");
-  store.set("gamma", "3");
-  store.set("delta", "4.5");
-  std::string filename = "test_store.txt";
+TEST_CASE("QeiVau persist and load") {
+  QeiVauStore store;
+  store.set("alpha", std::string("1"));
+  store.set("beta", std::vector<std::string>{"x", "y"});
+  store.set("gamma", std::map<std::string, std::string>{{"a", "b"}, {"c", "d"}});
+  std::string filename = "build/test_variant_store.txt";
   store.persist(filename);
 
-  StringStore loaded;
+  QeiVauStore loaded;
   loaded.load(filename);
-  CHECK(loaded.get("alpha").value() == "1");
-  CHECK(loaded.get("beta").value() == "2");
-  CHECK(loaded.get("gamma").value() == "3");
-  CHECK(loaded.get("delta").value() == "4.5");
+  auto alpha = loaded.get("alpha");
+  REQUIRE(alpha);
+  CHECK(std::get<std::string>(*alpha) == "1");
+  auto beta = loaded.get("beta");
+  REQUIRE(beta);
+  CHECK(std::get<std::vector<std::string>>(*beta).size() == 2);
+  CHECK(std::get<std::vector<std::string>>(*beta)[0] == "x");
+  CHECK(std::get<std::vector<std::string>>(*beta)[1] == "y");
+  auto gamma = loaded.get("gamma");
+  REQUIRE(gamma);
+  const auto& gm = std::get<std::map<std::string, std::string>>(*gamma);
+  CHECK(gm.at("a") == "b");
+  CHECK(gm.at("c") == "d");
   CHECK(!loaded.get("nonexistent"));
   std::remove(filename.c_str());
 }
 
-TEST_CASE("QeiVau persist and load (list)") {
-  ListStore store;
-  store.set("letters", {"a", "b", "c"});
-  store.set("empty", {});
-  std::string filename = "test_list_store.txt";
-  store.persist(filename);
-
-  ListStore loaded;
-  loaded.load(filename);
-  auto letters = loaded.get("letters");
-  REQUIRE(letters);
-  CHECK(letters->size() == 3);
-  CHECK((*letters)[0] == "a");
-  CHECK((*letters)[1] == "b");
-  CHECK((*letters)[2] == "c");
-  auto empty = loaded.get("empty");
-  REQUIRE(empty);
-  CHECK(empty->empty());
-  std::remove(filename.c_str());
-}
-
-TEST_CASE("QeiVau should throw error if file cannot be opened (string)") {
-  StringStore store;
+TEST_CASE("QeiVau should throw error if file cannot be opened") {
+  QeiVauStore store;
   try {
     store.load("non_existent_file.txt");
+    FAIL("Expected exception not thrown");
   } catch (const std::exception& e) {
     CHECK(std::string(e.what()) == "Could not open file: non_existent_file.txt");
   }
 }
 
-TEST_CASE("QeiVau should throw error if file cannot be opened (list)") {
-  ListStore store;
-  try {
-    store.load("non_existent_file.txt");
-  } catch (const std::exception& e) {
-    CHECK(std::string(e.what()) == "Could not open file: non_existent_file.txt");
-  }
-}
-
-TEST_CASE("QeiVau load with invalid key value (string)") {
-  std::string filename = "test_invalid_store.txt";
+TEST_CASE("QeiVau load with missing key") {
+  std::string filename = "build/test_invalid_variant_store.txt";
   {
     std::ofstream out(filename);
-    out << "invalid=nonsense\n";
+    out << "name=true\n";
+    out << "=nonsense\n";
   }
 
   try {
-    StringStore loaded;
+    QeiVauStore loaded;
     loaded.load(filename);
+    FAIL("Expected exception not thrown");
   } catch (const std::exception& e) {
-    CHECK(std::string(e.what()) == "Malformed line: invalid=nonsense");
+    CHECK(std::string(e.what()).find("Key cannot be empty") != std::string::npos);
   }
 
   std::remove(filename.c_str());
 }
 
-TEST_CASE("QeiVau load with invalid key value (list)") {
-  std::string filename = "test_invalid_list_store.txt";
+TEST_CASE("QeiVau load with invalid list value") {
+  std::string filename = "build/test_invalid_list_variant_store.txt";
   {
     std::ofstream out(filename);
-    out << "invalid:string=[a,b\n";  // missing closing bracket
+    out << "invalid=[a,b\n";  // missing closing bracket
   }
 
   try {
-    ListStore loaded;
+    QeiVauStore loaded;
     loaded.load(filename);
+    FAIL("Expected exception not thrown");
   } catch (const std::exception& e) {
-    CHECK(std::string(e.what()).find("Type mismatch for key 'invalid'") != std::string::npos);
+    CHECK(std::string(e.what()).find("Mismatched brackets") != std::string::npos);
   }
 
   std::remove(filename.c_str());
 }
 
-TEST_CASE("QeiVau load with type mismatch (list string)") {
-  std::string filename = "test_type_mismatch_list.txt";
+TEST_CASE("QeiVau load with invalid map value") {
+  std::string filename = "build/test_invalid_map_variant_store.txt";
   {
     std::ofstream out(filename);
-    out << "foo:int=42\n";  // type is int, but store expects list
+    out << "invalid={key1:value1,key2\n";  // missing closing brace and value for key2
   }
 
   try {
-    ListStore loaded;
+    QeiVauStore loaded;
     loaded.load(filename);
+    FAIL("Expected exception not thrown");
   } catch (const std::exception& e) {
-    CHECK(std::string(e.what()).find("Type mismatch") != std::string::npos);
+    CHECK(std::string(e.what()).find("Mismatched brackets") != std::string::npos);
   }
 
   std::remove(filename.c_str());
